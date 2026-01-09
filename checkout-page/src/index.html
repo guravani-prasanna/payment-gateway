@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Checkout</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+
+<body onload="loadOrder()">
+
+<div class="card" data-test-id="checkout-container">
+
+  <div data-test-id="order-summary">
+    <h2>Complete Payment</h2>
+    <div>Amount: <span data-test-id="order-amount" id="amount"></span></div>
+    <div>Order ID: <span data-test-id="order-id" id="oid"></span></div>
+  </div>
+
+  <div data-test-id="payment-methods">
+    <button data-test-id="method-upi" onclick="showUPI()">UPI</button>
+    <button data-test-id="method-card" onclick="showCard()">Card</button>
+  </div>
+
+  <form data-test-id="upi-form" id="upiForm" style="display:none" onsubmit="payUPI(event)">
+    <input data-test-id="vpa-input" id="vpa" placeholder="user@bank" required>
+    <button data-test-id="pay-button">Pay</button>
+  </form>
+
+  <form data-test-id="card-form" id="cardForm" style="display:none" onsubmit="payCard(event)">
+    <input data-test-id="card-number-input" id="card_number" placeholder="Card Number" required>
+    <input data-test-id="expiry-input" id="expiry" placeholder="MM/YY" required>
+    <input data-test-id="cvv-input" id="cvv" placeholder="CVV" required>
+    <input data-test-id="cardholder-name-input" id="name" placeholder="Name on Card" required>
+    <button data-test-id="pay-button">Pay</button>
+  </form>
+
+  <div data-test-id="processing-state" id="processing" style="display:none">
+    Processing payment...
+  </div>
+
+  <div data-test-id="success-state" id="success" style="display:none">
+    <h2>Payment Successful!</h2>
+    Payment ID: <span data-test-id="payment-id" id="pid"></span>
+  </div>
+
+  <div data-test-id="error-state" id="error" style="display:none">
+    <h2>Payment Failed</h2>
+    <span data-test-id="error-message" id="errMsg"></span>
+    <button data-test-id="retry-button" onclick="location.reload()">Try Again</button>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Merchant Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="card" data-test-id="dashboard">
+  <h2>Merchant Dashboard</h2>
+
+  <!-- API Credentials -->
+  <div data-test-id="api-credentials">
+    <div class="field">
+      <label>API Key</label>
+      <span data-test-id="api-key">key_test_abc123</span>
+    </div>
+    <div class="field">
+      <label>API Secret</label>
+      <span data-test-id="api-secret">secret_test_xyz789</span>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div data-test-id="stats-container">
+    <p>Total Transactions: <strong><span data-test-id="total-transactions">0</span></strong></p>
+    <p>Total Amount: <strong><span data-test-id="total-amount">₹0.00</span></strong></p>
+    <p>Success Rate: <strong><span data-test-id="success-rate">0%</span></strong></p>
+  </div>
+
+  <button onclick="location.href='/transactions.html'">View Transactions</button>
+</div>
+
+<script>
+async function loadStats() {
+  try {
+    const res = await fetch("http://localhost:8000/api/v1/dashboard/stats", {
+      headers: {
+        "X-Api-Key": "key_test_abc123",
+        "X-Api-Secret": "secret_test_xyz789"
+      }
+    });
+
+    if (!res.ok) throw new Error("Stats API failed");
+
+    const d = await res.json();
+
+    document.querySelector('[data-test-id="total-transactions"]').innerText = d.total_transactions;
+    document.querySelector('[data-test-id="total-amount"]').innerText =
+      "₹" + (d.total_amount / 100).toFixed(2);
+    document.querySelector('[data-test-id="success-rate"]').innerText =
+      d.success_rate + "%";
+
+  } catch (err) {
+    console.error("Dashboard stats error:", err);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadStats);
+</script>
+
+</body>
+</html>

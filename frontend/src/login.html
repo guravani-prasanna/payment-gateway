@@ -1,0 +1,25 @@
+﻿<link rel="stylesheet" href="style.css">
+
+<div class="card">
+<form data-test-id="login-form" id="loginForm">
+  <h2>Merchant Login</h2>
+
+  <input id="email" data-test-id="email-input" type="email" placeholder="Email" required>
+  <input id="pwd" data-test-id="password-input" type="password" placeholder="Password" required>
+
+  <button data-test-id="login-button" type="submit">Login</button>
+  <p id="msg" style="color:red"></p>
+</form>
+</div>
+
+<script>
+document.getElementById("loginForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  const email = document.getElementById("email").value;
+  if(!email){
+    document.getElementById("msg").innerText = "Enter email";
+    return;
+  }
+  window.location.href = "/dashboard.html";
+});
+</script>
