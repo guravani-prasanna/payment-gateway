@@ -1,66 +1,127 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html>
-<head>
-  <title>Transactions</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body onload="loadTransactions()">
-
-<div class="card">
-  <h2>Transactions</h2>
-
-  <table data-test-id="transactions-table">
-    <thead>
-      <tr>
-        <th>Payment ID</th>
-        <th>Order ID</th>
-        <th>Amount</th>
-        <th>Method</th>
-        <th>Status</th>
-        <th>Created</th>
-      </tr>
-    </thead>
-    <tbody id="txBody"></tbody>
-  </table>
-
-  <button onclick="location.href='/dashboard.html'">Back to Dashboard</button>
-</div>
-
-<script>
-async function loadTransactions(){
-  try{
-    const res = await fetch("http://localhost:8000/api/v1/dashboard/transactions",{
-      headers:{
-        "X-Api-Key":"key_test_abc123",
-        "X-Api-Secret":"secret_test_xyz789"
+  <head>
+    <meta charset="UTF-8" />
+    <title>Transactions</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        margin: 0;
+        padding: 0;
       }
-    });
+      .container {
+        max-width: 800px;
+        margin: 50px auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+      h2 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      th {
+        background: #007bff;
+        color: #fff;
+        border-radius: 5px 5px 0 0;
+      }
+      tr:nth-child(even) {
+        background: #f9f9f9;
+      }
+      tr:hover {
+        background: #f1f1f1;
+      }
+      #backBtn {
+        padding: 10px 20px;
+        margin-top: 20px;
+        background: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+      #backBtn:hover {
+        background: #0056b3;
+      }
+      td.status {
+        font-weight: bold;
+      }
+      td.status.Success {
+        color: #28a745;
+      }
+      td.status.Failed {
+        color: #dc3545;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Transactions</h2>
+      <table id="transactionsTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Method</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button id="backBtn">Back to Dashboard</button>
+    </div>
 
-    const data = await res.json();
-    const tbody = document.getElementById("txBody");
-    tbody.innerHTML = "";
+    <script>
+      function loadTransactions() {
+        const tbody = document
+          .getElementById("transactionsTable")
+          .getElementsByTagName("tbody")[0];
+        tbody.innerHTML = "";
+        const transactions = JSON.parse(
+          localStorage.getItem("transactions") || "[]"
+        );
 
-    data.forEach(tx=>{
-      const tr = document.createElement("tr");
-      tr.setAttribute("data-test-id","transaction-row");
-      tr.setAttribute("data-payment-id",tx.id);
+        if (transactions.length === 0) {
+          const row = tbody.insertRow();
+          const cell = row.insertCell(0);
+          cell.colSpan = 5;
+          cell.innerText = "No transactions yet";
+          cell.style.textAlign = "center";
+          cell.style.padding = "20px";
+        } else {
+          transactions.forEach((tx) => {
+            const row = tbody.insertRow();
+            row.insertCell(0).innerText = tx.id;
+            row.insertCell(1).innerText = tx.date;
+            row.insertCell(2).innerText = tx.amount;
+            row.insertCell(3).innerText = tx.method;
+            const statusCell = row.insertCell(4);
+            statusCell.innerText = tx.status;
+            statusCell.className = "status " + tx.status; // adds Success or Failed class for coloring
+          });
+        }
+      }
 
-      tr.innerHTML = `
-        <td data-test-id="payment-id">${tx.id}</td>
-        <td data-test-id="order-id">${tx.order_id}</td>
-        <td data-test-id="amount">₹${(tx.amount/100).toFixed(2)}</td>
-        <td data-test-id="method">${tx.method}</td>
-        <td data-test-id="status" style="color:${tx.status==="success"?"green":"red"}">${tx.status}</td>
-        <td data-test-id="created-at">${new Date(tx.created_at).toLocaleString()}</td>
-      `;
-      tbody.appendChild(tr);
-    });
+      document.getElementById("backBtn").addEventListener("click", function () {
+        window.location.href = "dashboard.html";
+      });
 
-  }catch(err){
-    console.error("Failed loading transactions",err);
-  }
-}
-</script>
-
-</body>
+      window.onload = loadTransactions;
+    </script>
+  </body>
 </html>

@@ -1,16 +1,20 @@
-let orderId = "", paymentId = "";
+// Global variables
+let orderId = "";
 
-async function loadOrder() {
-  const params = new URLSearchParams(window.location.search);
-  orderId = params.get("order_id");
+// Run on page load
+window.onload = function () {
+  loadOrder();
+};
 
-  const res = await fetch(`http://localhost:8000/api/v1/orders/${orderId}/public`);
-  const data = await res.json();
-
-  document.getElementById("amount").innerText = "₹" + (data.amount / 100).toFixed(2);
-  document.getElementById("oid").innerText = orderId;
+// Auto-fill amount and order ID
+function loadOrder() {
+  const amount = localStorage.getItem("amount") || "500";
+  orderId = "ORD-" + Math.floor(Math.random() * 1000000);
+  document.getElementById("amount").value = amount;
+  document.getElementById("oid").value = orderId;
 }
 
+// Show/hide forms
 function showUPI() {
   document.getElementById("upiForm").style.display = "block";
   document.getElementById("cardForm").style.display = "none";
@@ -21,69 +25,78 @@ function showCard() {
   document.getElementById("upiForm").style.display = "none";
 }
 
-async function payUPI(e) {
-  e.preventDefault();
-  startProcessing();
-
-  const vpa = document.getElementById("vpa").value;
-
-  const res = await fetch("http://localhost:8000/api/v1/payments/public", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ order_id: orderId, method: "upi", vpa })
-  });
-
-  const data = await res.json();
-  paymentId = data.id;
-  pollStatus();
-}
-
-async function payCard(e) {
-  e.preventDefault();
-  startProcessing();
-
-  const [month, year] = document.getElementById("expiry").value.split("/");
-
-  const res = await fetch("http://localhost:8000/api/v1/payments/public", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      order_id: orderId,
-      method: "card",
-      card: {
-        number: document.getElementById("card_number").value,
-        expiry_month: month,
-        expiry_year: year,
-        cvv: document.getElementById("cvv").value,
-        holder_name: document.getElementById("name").value
-      }
-    })
-  });
-
-  const data = await res.json();
-  paymentId = data.id;
-  pollStatus();
-}
-
+// Show processing
 function startProcessing() {
   document.getElementById("processing").style.display = "block";
   document.getElementById("upiForm").style.display = "none";
   document.getElementById("cardForm").style.display = "none";
+  document.getElementById("success").style.display = "none";
+  document.getElementById("error").style.display = "none";
 }
 
-async function pollStatus() {
-  const res = await fetch(`http://localhost:8000/api/v1/payments/${paymentId}/public`);
-  const data = await res.json();
+// Simulate UPI payment
+function payUPI(e) {
+  e.preventDefault();
+  startProcessing();
 
-  if (data.status === "processing") {
-    setTimeout(pollStatus, 2000);
-  } else if (data.status === "success") {
+  const amount = document.getElementById("amount").value;
+  const paymentId = "SIMULATED-UPI-" + Math.floor(Math.random() * 100000);
+
+  setTimeout(() => {
     document.getElementById("processing").style.display = "none";
     document.getElementById("success").style.display = "block";
     document.getElementById("pid").innerText = paymentId;
-  } else {
+
+    // Save the transaction
+    saveTransaction(paymentId, amount, "UPI");
+
+    document.getElementById("nextStep").style.display = "block";
+  }, 2000);
+}
+
+function payCard(e) {
+  e.preventDefault();
+  startProcessing();
+
+  const amount = document.getElementById("amount").value;
+  const paymentId = "SIMULATED-CARD-" + Math.floor(Math.random() * 100000);
+
+  setTimeout(() => {
     document.getElementById("processing").style.display = "none";
-    document.getElementById("error").style.display = "block";
-    document.getElementById("errMsg").innerText = data.error_description;
-  }
+    document.getElementById("success").style.display = "block";
+    document.getElementById("pid").innerText = paymentId;
+
+    // Save the transaction
+    saveTransaction(paymentId, amount, "Card");
+
+    document.getElementById("nextStep").style.display = "block";
+  }, 2000);
+}
+function nextStep() {
+  alert("Proceeding to the next step!");
+  // Optional redirect:
+  // window.location.href = "next.html";
+}
+// This makes the Continue button work
+document.getElementById("nextStep").addEventListener("click", function () {
+  alert("Proceeding to the next step!");
+  window.location.href = "transaction.html";
+  // Optional: redirect to another page
+  // window.location.href = "success.html";
+});
+function saveTransaction(id, amount, method) {
+  // Get existing transactions from localStorage
+  const transactions = JSON.parse(localStorage.getItem("transactions") || "[]");
+
+  // Add the new transaction
+  transactions.push({
+    id: id,
+    date: new Date().toISOString().split("T")[0], // YYYY-MM-DD
+    amount: amount,
+    method: method,
+    status: "Success",
+  });
+
+  // Save back to localStorage
+  localStorage.setItem("transactions", JSON.stringify(transactions));
 }
